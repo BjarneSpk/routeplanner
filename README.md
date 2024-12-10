@@ -1,37 +1,19 @@
 # Routeplanner
 
+## Prerequisites
+
+- [make](https://www.gnu.org/software/make/)
+- [JDK 21](https://openjdk.org/projects/jdk/21/)
+
 ## Usage
 
-### Using Make
-
-- Running
-
-```bash
-make run
-```
-
-- Compiling
-
-```bash
-make build
-```
-
-- Running & Compiling
-
-```bash
-make all
-```
-
-- Testing
-
-```bash
-make test
-```
-
-### Using Maven
-
-- Compiling & Running
-
-```bash
-mvn clean compile exec:java@Main -Dexec.args="-Xmx12g"
+| Goal          | Command      |
+| ------------- | ------------ |
+| Compile       | `make build` |
+| Run           | `make run`   |
+| Run & Compile | `make all`   |
+| Bench         | `make bench` |
+## Example
+```sh
+make bench graph=/Users/bjarne/routeplanner/stgtregbz.fmi lon=48.744970 lat=9.107321 que=/Users/bjarne/Benchs/stgtregbz.que s=638394
 ```

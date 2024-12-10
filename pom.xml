@@ -50,6 +50,15 @@
               <mainClass>de.unistuttgart.fmi.App</mainClass>
             </configuration>
           </execution>
+          <execution>
+            <id>Benchmark</id>
+            <goals>
+              <goal>java</goal>
+            </goals>
+            <configuration>
+              <mainClass>de.unistuttgart.fmi.Benchmark</mainClass>
+            </configuration>
+          </execution>
         </executions>
       </plugin>
       <plugin>
