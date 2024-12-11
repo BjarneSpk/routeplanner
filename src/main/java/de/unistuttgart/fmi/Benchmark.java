@@ -33,7 +33,7 @@ public class Benchmark {
         System.out.println("Finding closest node to coordinates " + lon + " " + lat);
         long nodeFindStart = System.currentTimeMillis();
 
-        double[] coords = graph.getNearestNeighbour(new double[] { lon, lat });
+        double[] coords = graph.getNearestNeighbour(new double[] {lon, lat});
 
         long nodeFindEnd = System.currentTimeMillis();
         System.out.println("\tfinding node took " + (nodeFindEnd - nodeFindStart) + "ms: " + coords[0] + ", "
@@ -47,8 +47,8 @@ public class Benchmark {
                 int oneToOneSourceNodeId = Integer.parseInt(currLine.substring(0, currLine.indexOf(" ")));
                 int oneToOneTargetNodeId = Integer.parseInt(currLine.substring(currLine.indexOf(" ") + 1));
 
-                int oneToOneDistance = new ClosestPathFinder(graph).getShortestPath(oneToOneSourceNodeId,
-                        oneToOneTargetNodeId);
+                int oneToOneDistance =
+                        new ClosestPathFinder(graph).getShortestPath(oneToOneSourceNodeId, oneToOneTargetNodeId);
 
                 System.out.println(oneToOneDistance);
             }

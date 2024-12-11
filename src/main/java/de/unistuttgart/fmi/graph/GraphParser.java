@@ -36,24 +36,24 @@ class GraphParser {
         int numNodes = Integer.parseInt(reader.readLine());
         int numEdges = Integer.parseInt(reader.readLine());
 
-        int[][] adjacencyArray = new int[numEdges][];
-        double[][] nodes = new double[numNodes][];
+        int[][] adjacencyArray = new int[numEdges][3];
+        double[][] nodes = new double[numNodes][3];
         int[] offsetArray = new int[numNodes + 1];
 
         Arrays.fill(offsetArray, 0);
 
-        // read node cordinates
         for (int i = 0; i < numNodes; i++) {
             String[] node = reader.readLine().split(" ");
-            nodes[i] = new double[] { Double.parseDouble(node[2]), Double.parseDouble(node[3]),
-                    Double.parseDouble(node[0])
-            };
+            nodes[i][0] = Double.parseDouble(node[2]);
+            nodes[i][1] = Double.parseDouble(node[3]);
+            nodes[i][2] = Double.parseDouble(node[0]);
         }
 
         for (int i = 0; i < numEdges; i++) {
             String[] edge = reader.readLine().split(" ");
-            adjacencyArray[i] = new int[] { Integer.parseInt(edge[0]), Integer.parseInt(edge[1]),
-                    Integer.parseInt(edge[2]) };
+            adjacencyArray[i][0] = Integer.parseInt(edge[0]);
+            adjacencyArray[i][1] = Integer.parseInt(edge[1]);
+            adjacencyArray[i][2] = Integer.parseInt(edge[2]);
             offsetArray[Integer.parseInt(edge[0])]++;
         }
 

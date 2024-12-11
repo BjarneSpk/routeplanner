@@ -30,14 +30,12 @@ public class ClosestPathFinder {
         // predecessors[start] = start;
 
         PriorityQueue queue = new PriorityQueue(numNodes);
+
         queue.add(start);
 
         while (!queue.isEmpty()) {
             int current = queue.poll();
 
-            if (visited[current]) {
-                continue;
-            }
             visited[current] = true;
 
             int firstEdgeIdx = graph.offsetArray[current];
@@ -51,9 +49,7 @@ public class ClosestPathFinder {
                 int distance = distances[current] + edge[2];
 
                 if (distance < distances[edge[1]]) {
-                    // queue.remove(edge[1]);
                     distances[edge[1]] = distance;
-                    // queue.add(edge[1]);
                     queue.decreaseKey(edge[1]);
                     // predecessors[edge[1]] = current;
                 }
@@ -84,9 +80,6 @@ public class ClosestPathFinder {
                 return distances[current];
             }
 
-            if (visited[current]) {
-                continue;
-            }
             visited[current] = true;
 
             int firstEdgeIdx = graph.offsetArray[current];
@@ -100,10 +93,8 @@ public class ClosestPathFinder {
                 int distance = distances[current] + edge[2];
 
                 if (distance < distances[edge[1]]) {
-                    // queue.remove(edge[1]);
                     distances[edge[1]] = distance;
                     queue.decreaseKey(edge[1]);
-                    // queue.add(edge[1]);
                     // predecessors[edge[1]] = current;
                 }
             }
@@ -132,7 +123,7 @@ public class ClosestPathFinder {
             heap[size] = value;
             indices[value] = size;
             size++;
-            heapifyUp(size - 1);
+            bubbleUp(size - 1);
         }
 
         public void decreaseKey(int value) {
@@ -141,8 +132,8 @@ public class ClosestPathFinder {
                 add(value);
                 return;
             }
-            heapifyDown(idx);
-            heapifyUp(idx);
+            bubbleDown(idx);
+            bubbleUp(idx);
         }
 
         public int poll() {
@@ -155,7 +146,7 @@ public class ClosestPathFinder {
             heap[0] = heap[size - 1];
             indices[result] = -1;
             size--;
-            heapifyDown(0);
+            bubbleDown(0);
 
             return result;
         }
@@ -164,7 +155,7 @@ public class ClosestPathFinder {
             return size == 0;
         }
 
-        private void heapifyUp(int index) {
+        private void bubbleUp(int index) {
             while (index > 0) {
                 int parentIndex = (index - 1) / 2;
                 if (Integer.compare(distances[heap[index]], distances[heap[parentIndex]]) >= 0) {
@@ -175,7 +166,7 @@ public class ClosestPathFinder {
             }
         }
 
-        private void heapifyDown(int index) {
+        private void bubbleDown(int index) {
             while (true) {
                 int leftChild = 2 * index + 1;
                 int rightChild = 2 * index + 2;
