@@ -1,16 +1,17 @@
-MEMORY_OPTS = -Xmx12g
+MVN = ./mvnw
 
-.PHONY: all
-all: build run
+ifeq ($(OS),Windows_NT)
+    MVN = mvnw.cmd
+endif
 
 .PHONY: build
 build:
-	mvn clean compile
+	$(MVN) clean compile
 
 .PHONY: run
 run:
-	mvn exec:java@Main -Dexec.args="$(MEMORY_OPTS)"
+	$(MVN) exec:java -Dexec.mainClass="du.unistuttgart.fmi.App" -Dexec.args="-graph $(graph) -lon $(lon) -lat $(lat) -que $(que) -s $(s)"
 
-.PHONY: test
-test:
-	mvn test
+.PHONY: bench
+bench:
+	$(MVN) exec:java -Dexec.mainClass="de.unistuttgart.fmi.Benchmark" -Dexec.args="-graph $(graph) -lon $(lon) -lat $(lat) -que $(que) -s $(s)"
