@@ -37,31 +37,6 @@
         </configuration>
       </plugin>
       <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>exec-maven-plugin</artifactId>
-        <version>3.4.1</version>
-        <executions>
-          <execution>
-            <id>Main</id>
-            <goals>
-              <goal>java</goal>
-            </goals>
-            <configuration>
-              <mainClass>de.unistuttgart.fmi.App</mainClass>
-            </configuration>
-          </execution>
-          <execution>
-            <id>Benchmark</id>
-            <goals>
-              <goal>java</goal>
-            </goals>
-            <configuration>
-              <mainClass>de.unistuttgart.fmi.Benchmark</mainClass>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
         <groupId>com.diffplug.spotless</groupId>
         <artifactId>spotless-maven-plugin</artifactId>
         <version>2.43.0</version>

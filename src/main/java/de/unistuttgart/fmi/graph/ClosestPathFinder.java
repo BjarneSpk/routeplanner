@@ -8,7 +8,7 @@ public class ClosestPathFinder {
     private int[] distances;
     // private int[] predecessors;
 
-    public ClosestPathFinder(Graph graph) {
+    ClosestPathFinder(Graph graph) {
         this.graph = graph;
     }
 
@@ -103,11 +103,15 @@ public class ClosestPathFinder {
         return -1;
     }
 
+    /**
+     * Simple minHeap implementation sorting by distance to startnode.
+     * Supports add, poll and decreaseKey operation.
+     */
     private class PriorityQueue {
 
-        private int[] heap;
+        private final int[] heap;
         private int size;
-        private int[] indices;
+        private final int[] indices;
 
         public PriorityQueue(int initialCapacity) {
             if (initialCapacity <= 0) {
@@ -137,10 +141,6 @@ public class ClosestPathFinder {
         }
 
         public int poll() {
-            if (size == 0) {
-                throw new IllegalStateException("PriorityQueue is empty");
-            }
-
             int result = heap[0];
 
             heap[0] = heap[size - 1];

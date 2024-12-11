@@ -27,4 +27,8 @@ public class Graph {
     public double[] getNearestNeighbour(double[] start) {
         return this.tree.nearestNeighbor(start);
     }
+
+    public ClosestPathFinder getClosestPathFinder() {
+        return new ClosestPathFinder(this);
+    }
 }

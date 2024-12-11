@@ -1,6 +1,5 @@
 package de.unistuttgart.fmi;
 
-import de.unistuttgart.fmi.graph.ClosestPathFinder;
 import de.unistuttgart.fmi.graph.Graph;
 import de.unistuttgart.fmi.graph.InvalidGraphException;
 import java.io.BufferedReader;
@@ -37,7 +36,7 @@ public class Benchmark {
 
         long nodeFindEnd = System.currentTimeMillis();
         System.out.println("\tfinding node took " + (nodeFindEnd - nodeFindStart) + "ms: " + coords[0] + ", "
-                + coords[1] + "id: " + coords[2]);
+                + coords[1] + " id: " + (int) coords[2]);
 
         System.out.println("Running one-to-one Dijkstras for queries in .que file " + quePath);
         long queStart = System.currentTimeMillis();
@@ -48,7 +47,7 @@ public class Benchmark {
                 int oneToOneTargetNodeId = Integer.parseInt(currLine.substring(currLine.indexOf(" ") + 1));
 
                 int oneToOneDistance =
-                        new ClosestPathFinder(graph).getShortestPath(oneToOneSourceNodeId, oneToOneTargetNodeId);
+                        graph.getClosestPathFinder().getShortestPath(oneToOneSourceNodeId, oneToOneTargetNodeId);
 
                 System.out.println(oneToOneDistance);
             }
@@ -62,7 +61,7 @@ public class Benchmark {
         System.out.println("Computing one-to-all Dijkstra from node id " + sourceNodeId);
         long oneToAllStart = System.currentTimeMillis();
 
-        var closesPath = new ClosestPathFinder(graph);
+        var closesPath = graph.getClosestPathFinder();
         closesPath.getShortestPath(sourceNodeId);
 
         long oneToAllEnd = System.currentTimeMillis();
