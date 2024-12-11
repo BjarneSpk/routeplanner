@@ -5,9 +5,9 @@ package de.unistuttgart.fmi.graph;
  */
 public class Graph {
 
-    private final int[][] adjacencyArray;
-    private final double[][] nodes;
-    private final int[] offsetArray;
+    final int[][] adjacencyArray;
+    final double[][] nodes;
+    final int[] offsetArray;
     private KDTree tree;
 
     public Graph(int[][] adjacencyArray, int[] offsetArray, double[][] nodes) {

@@ -1,5 +1,6 @@
 package de.unistuttgart.fmi;
 
+import de.unistuttgart.fmi.graph.ClosestPathFinder;
 import de.unistuttgart.fmi.graph.Graph;
 import de.unistuttgart.fmi.graph.InvalidGraphException;
 import java.io.BufferedReader;
@@ -32,13 +33,11 @@ public class Benchmark {
         System.out.println("Finding closest node to coordinates " + lon + " " + lat);
         long nodeFindStart = System.currentTimeMillis();
 
-        double[] coords = graph.getNearestNeighbour(new double[] {lon, lat});
+        double[] coords = graph.getNearestNeighbour(new double[] { lon, lat });
 
         long nodeFindEnd = System.currentTimeMillis();
         System.out.println("\tfinding node took " + (nodeFindEnd - nodeFindStart) + "ms: " + coords[0] + ", "
                 + coords[1] + "id: " + coords[2]);
-
-        System.exit(0);
 
         System.out.println("Running one-to-one Dijkstras for queries in .que file " + quePath);
         long queStart = System.currentTimeMillis();
@@ -47,10 +46,10 @@ public class Benchmark {
             while ((currLine = bufferedReader.readLine()) != null) {
                 int oneToOneSourceNodeId = Integer.parseInt(currLine.substring(0, currLine.indexOf(" ")));
                 int oneToOneTargetNodeId = Integer.parseInt(currLine.substring(currLine.indexOf(" ") + 1));
-                int oneToOneDistance = -42;
-                // TODO set oneToOneDistance to the distance from
-                // oneToOneSourceNodeId to oneToOneSourceNodeId as computed by
-                // the one-to-one Dijkstra
+
+                int oneToOneDistance = new ClosestPathFinder(graph).getShortestPath(oneToOneSourceNodeId,
+                        oneToOneTargetNodeId);
+
                 System.out.println(oneToOneDistance);
             }
         } catch (Exception e) {
@@ -62,7 +61,10 @@ public class Benchmark {
 
         System.out.println("Computing one-to-all Dijkstra from node id " + sourceNodeId);
         long oneToAllStart = System.currentTimeMillis();
-        // TODO: run one-to-all Dijkstra here
+
+        var closesPath = new ClosestPathFinder(graph);
+        closesPath.getShortestPath(sourceNodeId);
+
         long oneToAllEnd = System.currentTimeMillis();
         System.out.println("\tone-to-all Dijkstra took " + (oneToAllEnd - oneToAllStart) + "ms");
 
@@ -70,9 +72,9 @@ public class Benchmark {
         System.out.print("Enter target node id... ");
         try (var in = new Scanner(System.in)) {
             int targetNodeId = in.nextInt();
-            int oneToAllDistance = -42;
-            // TODO set oneToAllDistance to the distance from sourceNodeId to
-            // targetNodeId as computed by the one-to-all Dijkstra
+
+            int oneToAllDistance = closesPath.getDistance(targetNodeId);
+
             System.out.println("Distance from " + sourceNodeId + " to " + targetNodeId + " is " + oneToAllDistance);
         }
     }

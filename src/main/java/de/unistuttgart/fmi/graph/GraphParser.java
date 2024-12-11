@@ -38,28 +38,33 @@ class GraphParser {
 
         int[][] adjacencyArray = new int[numEdges][];
         double[][] nodes = new double[numNodes][];
-        int[] offsetArray = new int[numNodes];
+        int[] offsetArray = new int[numNodes + 1];
 
         Arrays.fill(offsetArray, 0);
 
         // read node cordinates
         for (int i = 0; i < numNodes; i++) {
             String[] node = reader.readLine().split(" ");
-            nodes[i] =
-                    new double[] {Double.parseDouble(node[2]), Double.parseDouble(node[3]), Double.parseDouble(node[0])
-                    };
+            nodes[i] = new double[] { Double.parseDouble(node[2]), Double.parseDouble(node[3]),
+                    Double.parseDouble(node[0])
+            };
         }
 
         for (int i = 0; i < numEdges; i++) {
             String[] edge = reader.readLine().split(" ");
-            adjacencyArray[i] =
-                    new int[] {Integer.parseInt(edge[0]), Integer.parseInt(edge[1]), Integer.parseInt(edge[2])};
+            adjacencyArray[i] = new int[] { Integer.parseInt(edge[0]), Integer.parseInt(edge[1]),
+                    Integer.parseInt(edge[2]) };
             offsetArray[Integer.parseInt(edge[0])]++;
         }
 
+        int prevEdges = offsetArray[0];
+        offsetArray[0] = 0;
         for (int i = 1; i < numNodes; i++) {
-            offsetArray[i] = offsetArray[i - 1] + offsetArray[i];
+            int temp = offsetArray[i];
+            offsetArray[i] = offsetArray[i - 1] + prevEdges;
+            prevEdges = temp;
         }
+        offsetArray[numNodes] = numEdges;
 
         return new Graph(adjacencyArray, offsetArray, nodes);
     }
