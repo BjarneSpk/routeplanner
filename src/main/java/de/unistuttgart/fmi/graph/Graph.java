@@ -8,20 +8,17 @@ public class Graph {
     final int[][] adjacencyArray;
     final double[][] nodes;
     final int[] offsetArray;
-    private KDTree tree;
+    private final KDTree tree;
 
-    public Graph(int[][] adjacencyArray, int[] offsetArray, double[][] nodes) {
+    public Graph(int[][] adjacencyArray, int[] offsetArray, double[][] nodes, KDTree tree) {
         this.adjacencyArray = adjacencyArray;
         this.nodes = nodes;
         this.offsetArray = offsetArray;
+        this.tree = tree;
     }
 
     public static Graph from(String filePath) throws InvalidGraphException {
         return new GraphParser(filePath).parse();
-    }
-
-    public void initClosestNodeDS() {
-        this.tree = new KDTree(nodes);
     }
 
     public double[] getNearestNeighbour(double[] start) {

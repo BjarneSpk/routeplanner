@@ -25,14 +25,10 @@ public class Benchmark {
         long graphReadEnd = System.currentTimeMillis();
         System.out.println("\tgraph read took " + (graphReadEnd - graphReadStart) + "ms");
 
-        System.out.println("Setting up closest node data structure...");
-
-        graph.initClosestNodeDS();
-
         System.out.println("Finding closest node to coordinates " + lon + " " + lat);
         long nodeFindStart = System.currentTimeMillis();
 
-        double[] coords = graph.getNearestNeighbour(new double[] {lon, lat});
+        double[] coords = graph.getNearestNeighbour(new double[] { lon, lat });
 
         long nodeFindEnd = System.currentTimeMillis();
         System.out.println("\tfinding node took " + (nodeFindEnd - nodeFindStart) + "ms: " + coords[0] + ", "
