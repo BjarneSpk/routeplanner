@@ -26,7 +26,8 @@ make bench graph=/Users/bjarne/routeplanner/stgtregbz.fmi lon=48.744970 lat=9.10
 ## Grading
 
 ```sh
+# compile with maven wrapper
 make build
+# run benchmark with given parameters
 make bench graph=/Users/bjarne/germany.fmi lon=48.744970 lat=9.107321 que=/Users/bjarne/germany.que s=8371825
 ```
-
