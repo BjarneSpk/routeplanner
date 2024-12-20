@@ -27,7 +27,7 @@ class KDTree {
         }
 
         ArrayDeque<int[]> stack = new ArrayDeque<>();
-        stack.push(new int[] { 0, points.length - 1, 0, 0 });
+        stack.push(new int[] {0, points.length - 1, 0, 0});
 
         while (!stack.isEmpty()) {
             int[] current = stack.pop();
@@ -36,8 +36,7 @@ class KDTree {
             int depth = current[2];
             int index = current[3];
 
-            if (start > end)
-                continue;
+            if (start > end) continue;
 
             int axis = depth % k;
             int medianIndex = (start + end) / 2;
@@ -45,14 +44,13 @@ class KDTree {
 
             tree[index] = points[medianIndex];
 
-            stack.push(new int[] { start, medianIndex - 1, depth + 1, 2 * index + 1 });
-            stack.push(new int[] { medianIndex + 1, end, depth + 1, 2 * index + 2 });
+            stack.push(new int[] {start, medianIndex - 1, depth + 1, 2 * index + 1});
+            stack.push(new int[] {medianIndex + 1, end, depth + 1, 2 * index + 2});
         }
     }
 
     private void quickSelect(double[][] points, int low, int high, int medianIndex, int axis) {
-        if (low == high)
-            return;
+        if (low == high) return;
 
         int pivotIndex = partition(points, low, high, axis);
 
