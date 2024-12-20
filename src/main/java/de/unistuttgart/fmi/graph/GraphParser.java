@@ -49,6 +49,9 @@ class GraphParser {
             nodes[i][2] = Double.parseDouble(node[0]);
         }
 
+        var t = new TreeBuilderThread(nodes);
+        t.start();
+
         for (int i = 0; i < numEdges; i++) {
             String[] edge = reader.readLine().split(" ");
             adjacencyArray[i][0] = Integer.parseInt(edge[0]);
@@ -66,6 +69,13 @@ class GraphParser {
         }
         offsetArray[numNodes] = numEdges;
 
-        return new Graph(adjacencyArray, offsetArray, nodes);
+        try {
+            t.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+
+        return new Graph(adjacencyArray, offsetArray, nodes, t.tree);
     }
 }
