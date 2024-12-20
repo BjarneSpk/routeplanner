@@ -28,7 +28,7 @@ public class Benchmark {
         System.out.println("Finding closest node to coordinates " + lon + " " + lat);
         long nodeFindStart = System.currentTimeMillis();
 
-        double[] coords = graph.getNearestNeighbour(new double[] { lon, lat });
+        double[] coords = graph.getNearestNeighbour(new double[] {lon, lat});
 
         long nodeFindEnd = System.currentTimeMillis();
         System.out.println("\tfinding node took " + (nodeFindEnd - nodeFindStart) + "ms: " + coords[0] + ", "
