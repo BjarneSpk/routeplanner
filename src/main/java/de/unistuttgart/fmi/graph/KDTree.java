@@ -1,8 +1,6 @@
 package de.unistuttgart.fmi.graph;
 
 import java.util.ArrayDeque;
-import java.util.Arrays;
-import java.util.Random;
 
 /**
  * Simple Implementation of a KDTree with k=2 fixed to find the nearest node in
@@ -13,98 +11,62 @@ import java.util.Random;
  *
  */
 class KDTree {
-    private static class KDNode {
-        double[] point;
-        KDNode left, right;
-        boolean isXAxis;
-
-        public KDNode(double[] point, boolean isXAxis) {
-            this.point = point;
-            this.isXAxis = isXAxis;
-        }
-    }
-
-    // Dimension of KDTree, here fixed to 2D
     private static final int k = 2;
-    private KDNode root;
-    private static final Random random = new Random();
+    private final double[][] tree;
 
     KDTree(double[][] points) {
-        this.root = buildTree(points);
+        int n = points.length;
+        int arraySize = (1 << ((int) Math.ceil(Math.log(n + 1) / Math.log(2)))) - 1;
+        tree = new double[arraySize][];
+        buildTree(points);
     }
 
-    /**
-     * Builds the tree iteratively from an array of points
-     *
-     * @param points the list of points
-     * @return the root of the built Tree
-     */
-    private KDNode buildTree(double[][] points) {
-        if (points == null || points.length == 0) return null;
-
-        ArrayDeque<KDNode> queue = new ArrayDeque<>();
-        KDNode rootNode = new KDNode(null, true);
-        queue.add(rootNode);
-
-        ArrayDeque<double[][]> pointQueue = new ArrayDeque<>();
-        pointQueue.add(points);
-
-        while (!queue.isEmpty()) {
-            KDNode currentNode = queue.poll();
-            double[][] currentPoints = pointQueue.poll();
-            if (currentPoints.length == 0) continue;
-
-            int axis = currentNode.isXAxis ? 0 : 1;
-            int medianIndex = currentPoints.length / 2;
-
-            currentNode.point = quickSelect(currentPoints, 0, currentPoints.length - 1, medianIndex, axis);
-
-            double[][] leftPoints = Arrays.copyOfRange(currentPoints, 0, medianIndex);
-            double[][] rightPoints = Arrays.copyOfRange(currentPoints, medianIndex + 1, currentPoints.length);
-
-            if (leftPoints.length > 0) {
-                currentNode.left = new KDNode(null, !currentNode.isXAxis);
-                queue.add(currentNode.left);
-                pointQueue.add(leftPoints);
-            }
-            if (rightPoints.length > 0) {
-                currentNode.right = new KDNode(null, !currentNode.isXAxis);
-                queue.add(currentNode.right);
-                pointQueue.add(rightPoints);
-            }
+    private void buildTree(double[][] points) {
+        if (points == null || points.length == 0) {
+            return;
         }
 
-        return rootNode;
+        ArrayDeque<int[]> stack = new ArrayDeque<>();
+        stack.push(new int[] { 0, points.length - 1, 0, 0 });
+
+        while (!stack.isEmpty()) {
+            int[] current = stack.pop();
+            int start = current[0];
+            int end = current[1];
+            int depth = current[2];
+            int index = current[3];
+
+            if (start > end)
+                continue;
+
+            int axis = depth % k;
+            int medianIndex = (start + end) / 2;
+            quickSelect(points, start, end, medianIndex, axis);
+
+            tree[index] = points[medianIndex];
+
+            stack.push(new int[] { start, medianIndex - 1, depth + 1, 2 * index + 1 });
+            stack.push(new int[] { medianIndex + 1, end, depth + 1, 2 * index + 2 });
+        }
     }
 
-    /**
-     * Algorihm to find the k-th smallest element in a list.
-     *
-     * @param points      the list of points
-     * @param low         lower index
-     * @param high        upper index (exclusive)
-     * @param medianIndex the median index of the original list
-     * @param the         axis of the point to find the median to
-     * @return the median point between high and low
-     */
-    private static double[] quickSelect(double[][] points, int low, int high, int medianIndex, int axis) {
-        if (low == high) return points[low];
+    private void quickSelect(double[][] points, int low, int high, int medianIndex, int axis) {
+        if (low == high)
+            return;
 
         int pivotIndex = partition(points, low, high, axis);
 
         if (medianIndex == pivotIndex) {
-            return points[medianIndex];
+            return;
         } else if (medianIndex < pivotIndex) {
-            return quickSelect(points, low, pivotIndex - 1, medianIndex, axis);
+            quickSelect(points, low, pivotIndex - 1, medianIndex, axis);
         } else {
-            return quickSelect(points, pivotIndex + 1, high, medianIndex, axis);
+            quickSelect(points, pivotIndex + 1, high, medianIndex, axis);
         }
     }
 
-    private static int partition(double[][] points, int low, int high, int axis) {
-        int pivotIndex = low + random.nextInt(high - low + 1);
-        double[] pivot = points[pivotIndex];
-        swap(points, pivotIndex, high); // Move pivot to end
+    private int partition(double[][] points, int low, int high, int axis) {
+        double[] pivot = points[high];
         int storeIndex = low;
 
         for (int i = low; i < high; i++) {
@@ -113,61 +75,50 @@ class KDTree {
                 storeIndex++;
             }
         }
-        swap(points, storeIndex, high); // Move pivot to its final position
+        swap(points, storeIndex, high);
         return storeIndex;
     }
 
-    private static void swap(double[][] points, int i, int j) {
+    private void swap(double[][] points, int i, int j) {
         double[] temp = points[i];
         points[i] = points[j];
         points[j] = temp;
     }
 
-    /**
-     * Calucalate the nearest node to a point in this KDTree.
-     *
-     * @param target the coordinates to find the nearest node to
-     * @return the nearest node contained in this Tree
-     */
-    double[] nearestNeighbor(double[] start) {
-        return nearestNeighbor(root, start, 0, null, Double.MAX_VALUE);
+    public double[] nearestNeighbor(double[] target) {
+        return nearestNeighbor(0, target, 0, null, Double.MAX_VALUE);
     }
 
-    private double[] nearestNeighbor(KDNode node, double[] target, int depth, double[] bestPoint, double bestDistance) {
-        if (node == null) {
+    private double[] nearestNeighbor(int index, double[] target, int depth, double[] bestPoint, double bestDistance) {
+        if (index >= tree.length || tree[index] == null) {
             return bestPoint;
         }
 
-        double distance = getDistance(target, node.point);
+        double distance = getDistance(target, tree[index]);
         if (distance < bestDistance) {
-            bestPoint = node.point;
+            bestPoint = tree[index];
             bestDistance = distance;
         }
 
         int axis = depth % k;
-        KDNode nextNode = (target[axis] < node.point[axis]) ? node.left : node.right;
-        KDNode otherNode = (target[axis] < node.point[axis]) ? node.right : node.left;
+        int leftIndex = 2 * index + 1;
+        int rightIndex = 2 * index + 2;
 
-        bestPoint = nearestNeighbor(nextNode, target, depth + 1, bestPoint, bestDistance);
+        int nextIndex = (target[axis] < tree[index][axis]) ? leftIndex : rightIndex;
+        int otherIndex = (target[axis] < tree[index][axis]) ? rightIndex : leftIndex;
+
+        bestPoint = nearestNeighbor(nextIndex, target, depth + 1, bestPoint, bestDistance);
         bestDistance = getDistance(target, bestPoint);
 
-        if (Math.abs(target[axis] - node.point[axis]) < bestDistance) {
-            bestPoint = nearestNeighbor(otherNode, target, depth + 1, bestPoint, bestDistance);
+        if (Math.abs(target[axis] - tree[index][axis]) < bestDistance) {
+            bestPoint = nearestNeighbor(otherIndex, target, depth + 1, bestPoint, bestDistance);
         }
 
         return bestPoint;
     }
 
-    /**
-     * Calculates great circle distance using Haversine formula.
-     *
-     * @param point1 first Point
-     * @param point2 second point
-     * @return the great circle distance between the two points
-     */
     private double getDistance(double[] point1, double[] point2) {
-        // Earth's radius in kilometers
-        final double R = 6371.0;
+        final double R = 6371.0; // Earth radius in kilometers
 
         double lat1 = Math.toRadians(point1[0]);
         double lon1 = Math.toRadians(point1[1]);

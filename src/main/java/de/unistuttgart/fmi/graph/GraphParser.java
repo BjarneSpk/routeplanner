@@ -73,6 +73,7 @@ class GraphParser {
             t.join();
         } catch (InterruptedException e) {
             e.printStackTrace();
+            System.exit(1);
         }
 
         return new Graph(adjacencyArray, offsetArray, nodes, t.tree);
