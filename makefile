@@ -10,7 +10,7 @@ build:
 
 .PHONY: run
 run:
-	$(MVN) exec:java -Dexec.mainClass="du.unistuttgart.fmi.App" -Dexec.args="-graph $(graph) -lon $(lon) -lat $(lat) -que $(que) -s $(s)"
+	$(MVN) exec:java -Dexec.mainClass="de.unistuttgart.fmi.App" -Dexec.args="-graph $(graph) -lon $(lon) -lat $(lat) -que $(que) -s $(s)"
 
 .PHONY: bench
 bench:
