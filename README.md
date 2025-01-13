@@ -20,7 +20,7 @@ For grading see [here](#grading).
 ## Example
 
 ```sh
-make bench graph=/Users/bjarne/routeplanner/stgtregbz.fmi lon=9.107321 lat=48.744970 que=/Users/bjarne/Benchs/stgtregbz.que s=638394
+make bench graph=/Users/bjarne/routeplanner/stgtregbz.fmi lat=48.744970 lon=9.107321  que=/Users/bjarne/Benchs/stgtregbz.que s=638394
 ```
 
 ## Grading
@@ -29,5 +29,5 @@ make bench graph=/Users/bjarne/routeplanner/stgtregbz.fmi lon=9.107321 lat=48.74
 # compile with maven wrapper
 make build
 # run benchmark with given parameters
-make bench graph=/Users/bjarne/germany.fmi lon=9.107321 lat=48.744970 que=/Users/bjarne/germany.que s=8371825
+make bench graph=/Users/bjarne/germany.fmi lat=48.744970 lon=9.107321 que=/Users/bjarne/germany.que s=8371825
 ```

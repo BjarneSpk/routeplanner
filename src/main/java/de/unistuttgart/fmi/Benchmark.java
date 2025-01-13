@@ -11,8 +11,8 @@ public class Benchmark {
     public static void main(String[] args) throws InvalidGraphException {
         // read parameters (parameters are expected in exactly this order)
         String graphPath = args[1];
-        double lon = Double.parseDouble(args[3]);
-        double lat = Double.parseDouble(args[5]);
+        double lat = Double.parseDouble(args[3]);
+        double lon = Double.parseDouble(args[5]);
         String quePath = args[7];
         int sourceNodeId = Integer.parseInt(args[9]);
 
@@ -25,10 +25,10 @@ public class Benchmark {
         long graphReadEnd = System.currentTimeMillis();
         System.out.println("\tgraph read took " + (graphReadEnd - graphReadStart) + "ms");
 
-        System.out.println("Finding closest node to coordinates " + lon + " " + lat);
+        System.out.println("Finding closest node to coordinates " + lat + " " + lon);
         long nodeFindStart = System.currentTimeMillis();
 
-        double[] coords = graph.getNearestNeighbour(new double[] { lat, lon });
+        double[] coords = graph.getNearestNeighbour(new double[] {lat, lon});
 
         long nodeFindEnd = System.currentTimeMillis();
         System.out.println("\tfinding node took " + (nodeFindEnd - nodeFindStart) + "ms: " + coords[0] + ", "
@@ -42,8 +42,8 @@ public class Benchmark {
                 int oneToOneSourceNodeId = Integer.parseInt(currLine.substring(0, currLine.indexOf(" ")));
                 int oneToOneTargetNodeId = Integer.parseInt(currLine.substring(currLine.indexOf(" ") + 1));
 
-                int oneToOneDistance = graph.getClosestPathFinder().getShortestPath(oneToOneSourceNodeId,
-                        oneToOneTargetNodeId);
+                int oneToOneDistance =
+                        graph.getClosestPathFinder().getShortestPath(oneToOneSourceNodeId, oneToOneTargetNodeId);
 
                 System.out.println(oneToOneDistance);
             }
