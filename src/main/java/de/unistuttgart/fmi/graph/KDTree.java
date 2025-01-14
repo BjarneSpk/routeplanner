@@ -1,6 +1,7 @@
 package de.unistuttgart.fmi.graph;
 
 import java.util.ArrayDeque;
+import java.util.Arrays;
 
 /**
  * Simple Implementation of a KDTree with k=2 fixed to find the nearest node in
@@ -18,7 +19,7 @@ class KDTree {
         int n = points.length;
         int arraySize = (1 << ((int) Math.ceil(Math.log(n + 1) / Math.log(2)))) - 1;
         tree = new double[arraySize][];
-        buildTree(points);
+        buildTree(Arrays.copyOf(points, points.length));
     }
 
     private void buildTree(double[][] points) {
@@ -36,7 +37,9 @@ class KDTree {
             int depth = current[2];
             int index = current[3];
 
-            if (start > end) continue;
+            if (start > end) {
+                continue;
+            }
 
             int axis = depth % k;
             int medianIndex = (start + end) / 2;
