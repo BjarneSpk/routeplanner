@@ -1,12 +1,16 @@
 package de.unistuttgart.fmi.graph;
 
 import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 
 public class ClosestPathFinder {
 
     private final Graph graph;
     private int[] distances;
-    // private int[] predecessors;
+    private int[] predecessors;
+    private int start;
+    private int target;
 
     ClosestPathFinder(Graph graph) {
         this.graph = graph;
@@ -16,18 +20,27 @@ public class ClosestPathFinder {
         return distances[target];
     }
 
+    public List<double[]> getPath() {
+        List<double[]> path = new LinkedList<>();
+
+        int current = target;
+        while (current != start) {
+            path.addFirst(graph.nodes[current]);
+            current = predecessors[current];
+        }
+        path.addFirst(graph.nodes[start]);
+        return path;
+    }
+
     public void getShortestPath(int start) {
         int numNodes = graph.nodes.length;
         distances = new int[numNodes];
-        // predecessors = new int[numNodes];
         boolean[] visited = new boolean[numNodes];
 
         Arrays.fill(distances, Integer.MAX_VALUE);
-        // Arrays.fill(predecessors, -1);
         Arrays.fill(visited, false);
 
         distances[start] = 0;
-        // predecessors[start] = start;
 
         PriorityQueue queue = new PriorityQueue(numNodes);
 
@@ -51,24 +64,25 @@ public class ClosestPathFinder {
                 if (distance < distances[edge[1]]) {
                     distances[edge[1]] = distance;
                     queue.decreaseKey(edge[1]);
-                    // predecessors[edge[1]] = current;
                 }
             }
         }
     }
 
     public int getShortestPath(int start, int target) {
+        this.start = start;
+        this.target = target;
         int numNodes = graph.nodes.length;
         distances = new int[numNodes];
-        // predecessors = new int[numNodes];
+        predecessors = new int[numNodes];
         boolean[] visited = new boolean[numNodes];
 
         Arrays.fill(distances, Integer.MAX_VALUE);
-        // Arrays.fill(predecessors, -1);
+        Arrays.fill(predecessors, -1);
         Arrays.fill(visited, false);
 
         distances[start] = 0;
-        // predecessors[start] = start;
+        predecessors[start] = start;
 
         PriorityQueue queue = new PriorityQueue(numNodes);
         queue.add(start);
@@ -95,7 +109,7 @@ public class ClosestPathFinder {
                 if (distance < distances[edge[1]]) {
                     distances[edge[1]] = distance;
                     queue.decreaseKey(edge[1]);
-                    // predecessors[edge[1]] = current;
+                    predecessors[edge[1]] = current;
                 }
             }
         }
