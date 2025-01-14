@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FMI Routeplanner</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+     crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+     crossorigin=""></script>
+    <style>
+        #map {
+            height: 400px;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <button id="reset-btn">Reset</button>
+    <button id="start-btn">Calculate Path</button>
+
+    <script>
+        const map = L.map('map').setView([48.745065, 9.105870], 13);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+       let markers = [];
+       let ids = [];
+       let pathLayer = null;
+
+        function addMarker(lat, lng, id) {
+            if (markers.length < 2) {
+                const marker = L.marker([lat, lng]).addTo(map);
+                markers.push(marker);
+                ids.push(id);
+            }
+        }
+
+        function fetchPath() {
+            if (ids.length != 2 || pathLayer) {
+                return;
+            }
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', 'http://localhost:8080/path', true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    try {
+                        const response = JSON.parse(xhr.responseText);
+
+                        drawPath(response.path);
+                    } catch (error) {
+                        console.error('Fehler beim Parsen der JSON-Antwort:', error);
+                    }
+                }
+            };
+            xhr.send(JSON.stringify({
+                start: ids[0],
+                end: ids[1],
+            }));
+        }
+
+        function drawPath(coordinates) {
+            const latLngs = coordinates.map(coord => [coord.lat, coord.lng]);
+            pathLayer = L.polyline(latLngs, { color: 'blue' }).addTo(map);
+            map.fitBounds(pathLayer.getBounds());
+        }
+
+        function reset() {
+            markers.forEach(marker => map.removeLayer(marker));
+            markers = [];
+            ids = [];
+            if (pathLayer) {
+                map.removeLayer(pathLayer);
+                pathLayer = null;
+            }
+        }
+
+        map.on('click', function (e) {
+            if (markers.length >= 2) {
+                return;
+            }
+            const { lat, lng } = e.latlng;
+
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', 'http://localhost:8080/coordinates', true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    try {
+                        const response = JSON.parse(xhr.responseText);
+
+                        addMarker(response.lat, response.lng, response.id);
+                    } catch (error) {
+                        console.error('Fehler beim Parsen der JSON-Antwort:', error);
+                    }
+                }
+            };
+            xhr.send(JSON.stringify({ lat, lng }));
+        });
+
+        document.getElementById('reset-btn').addEventListener('click', reset);
+        document.getElementById('start-btn').addEventListener('click', fetchPath);
+    </script>
+</body>
+</html>
