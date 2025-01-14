@@ -2,7 +2,7 @@
 
 Routeplanner for the [FMI](https://fmi.uni-stuttgart.de) programming project in winter term 24/25.
 Implements closest node search and closest path using dijkstras shortest path algorithm, using below 7GB of ram.
-For grading see [here](#grading).
+For examples see [here](#example).
 
 ## Prerequisites
 
@@ -20,14 +20,10 @@ For grading see [here](#grading).
 ## Example
 
 ```sh
-make bench graph=/Users/bjarne/routeplanner/stgtregbz.fmi lat=48.744970 lon=9.107321  que=/Users/bjarne/Benchs/stgtregbz.que s=638394
-```
-
-## Grading
-
-```sh
 # compile with maven wrapper
 make build
 # run benchmark with given parameters
 make bench graph=/Users/bjarne/germany.fmi lat=48.744970 lon=9.107321 que=/Users/bjarne/germany.que s=8371825
+# start frontend on http://localhost:8080/
+make run graph=/Users/bjarne/germany.fmi
 ```
