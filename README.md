@@ -1,8 +1,8 @@
 # Routeplanner
 
 Routeplanner for the [FMI](https://fmi.uni-stuttgart.de) programming project in winter term 24/25.
-Implements closest node search and closest path using dijkstras shortest path algorithm, using below 7GB of ram.
-For examples see [here](#example).
+Implements closest node search (<= 4ms) and closest path (<= 8s) using dijkstras shortest path algorithm for a graph of germany (20m nodes, 50m edges), using below 7GB of ram. Comes with a simple web-interface using [Leaflet.js](https://leafletjs.com/) and [OpenStreetMap](https://www.openstreetmap.org/), based on AJAX.
+For usage examples see [here](#example).
 
 ## Prerequisites
 
