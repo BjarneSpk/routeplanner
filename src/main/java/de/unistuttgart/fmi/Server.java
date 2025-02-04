@@ -31,7 +31,7 @@ public class Server {
         server.createContext("/path", new ArrayHandler());
 
         server.start();
-        System.out.println("Server listening on 127.0.0.1:8080");
+        System.out.println("Server listening on http://127.0.0.1:8080/");
     }
 
     public class ArrayHandler implements HttpHandler {
@@ -141,7 +141,7 @@ public class Server {
                 try (OutputStream outputStream = exchange.getResponseBody()) {
                     outputStream.write(response.getBytes(StandardCharsets.UTF_8));
                 }
-            } catch (Exception e) {
+            } catch (IllegalArgumentException e) {
                 String errorResponse = "{\"error\":\"Invalid input\"}";
                 exchange.getResponseHeaders().set("Content-Type", "application/json");
                 exchange.sendResponseHeaders(400, errorResponse.getBytes(StandardCharsets.UTF_8).length);
@@ -151,7 +151,7 @@ public class Server {
             }
         }
 
-        private double extractValue(String json, String key) throws Exception {
+        private double extractValue(String json, String key) {
             String searchKey = "\"" + key + "\":";
             int startIndex = json.indexOf(searchKey);
 
@@ -164,7 +164,7 @@ public class Server {
                 endIndex = json.indexOf("}", startIndex);
             }
             if (endIndex == -1) {
-                throw new IllegalArgumentException("Invalid JSON format");
+                throw new IllegalArgumentException("Invalid json");
             }
             String valueStr = json.substring(startIndex, endIndex).trim();
             return Double.parseDouble(valueStr);

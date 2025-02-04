@@ -5,18 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FMI Routeplanner</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-     crossorigin=""/>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-     crossorigin=""></script>
+     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <style>
         #map {
-            height: 400px;
+            height: 800px;
             width: 100%;
             margin-bottom: 10px;
         }
-
         button {
             padding: 10px 20px;
             font-size: 16px;
@@ -26,7 +22,6 @@
             border-radius: 5px;
             cursor: pointer;
         }
-
         button:hover {
             background-color: #0056b3;
         }
@@ -38,15 +33,15 @@
     <button id="start-btn">Calculate Path</button>
 
     <script>
-        const map = L.map('map').setView([48.745065, 9.105870], 13);
+        const map = L.map('map').setView([48.745065, 9.105870], 10);
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
 
-       let markers = [];
-       let ids = [];
-       let pathLayer = null;
+        let markers = [];
+        let ids = [];
+        let pathLayer = null;
 
         function addMarker(lat, lng, id) {
             if (markers.length < 2) {
@@ -71,7 +66,7 @@
 
                         drawPath(response.path);
                     } catch (error) {
-                        console.error('Fehler beim Parsen der JSON-Antwort:', error);
+                        console.error('Error while parsing json-path: ', error);
                     }
                 }
             };

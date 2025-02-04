@@ -118,8 +118,8 @@ public class ClosestPathFinder {
     }
 
     /**
-     * Simple minHeap implementation sorting by distance to startnode.
-     * Supports add, poll and decreaseKey operation.
+     * Simple minHeap implementation sorting by distance to startnode. Supports add, poll and
+     * decreaseKey operation.
      */
     private class PriorityQueue {
 
