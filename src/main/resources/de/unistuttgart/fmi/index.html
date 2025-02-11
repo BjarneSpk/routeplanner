@@ -33,9 +33,9 @@
     <button id="start-btn">Calculate Path</button>
 
     <script>
-        const map = L.map('map').setView([48.745065, 9.105870], 10);
+        const map = L.map("map").setView([48.745065, 9.105870], 10);
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
 
@@ -43,9 +43,9 @@
         let ids = [];
         let pathLayer = null;
 
-        function addMarker(lat, lng, id) {
+        function addMarker(lat, lon, id) {
             if (markers.length < 2) {
-                const marker = L.marker([lat, lng]).addTo(map);
+                const marker = L.marker([lat, lon]).addTo(map);
                 markers.push(marker);
                 ids.push(id);
             }
@@ -55,30 +55,15 @@
             if (ids.length != 2 || pathLayer) {
                 return;
             }
-            const xhr = new XMLHttpRequest();
-            xhr.open('POST', 'http://localhost:8080/path', true);
-            xhr.setRequestHeader('Content-Type', 'application/json');
-
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState === 4 && xhr.status === 200) {
-                    try {
-                        const response = JSON.parse(xhr.responseText);
-
-                        drawPath(response.path);
-                    } catch (error) {
-                        console.error('Error while parsing json-path: ', error);
-                    }
-                }
-            };
-            xhr.send(JSON.stringify({
-                start: ids[0],
-                end: ids[1],
-            }));
+            fetch(`path?start=${ids[0]}&end=${ids[1]}`)
+                .then(res => res.json())
+                .then(data => drawPath(data.path))
+                .catch(err => console.log("Error while parsing json-path: ", err));
         }
 
         function drawPath(coordinates) {
-            const latLngs = coordinates.map(coord => [coord.lat, coord.lng]);
-            pathLayer = L.polyline(latLngs, { color: 'blue' }).addTo(map);
+            const latLons = coordinates.map(coord => [coord.lat, coord.lon]);
+            pathLayer = L.polyline(latLons, { color: "blue" }).addTo(map);
             map.fitBounds(pathLayer.getBounds());
         }
 
@@ -92,32 +77,19 @@
             }
         }
 
-        map.on('click', function (e) {
+        map.on("click", e => {
             if (markers.length >= 2) {
                 return;
             }
             const { lat, lng } = e.latlng;
-
-            const xhr = new XMLHttpRequest();
-            xhr.open('POST', 'http://localhost:8080/coordinates', true);
-            xhr.setRequestHeader('Content-Type', 'application/json');
-
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState === 4 && xhr.status === 200) {
-                    try {
-                        const response = JSON.parse(xhr.responseText);
-
-                        addMarker(response.lat, response.lng, response.id);
-                    } catch (error) {
-                        console.error('Fehler beim Parsen der JSON-Antwort:', error);
-                    }
-                }
-            };
-            xhr.send(JSON.stringify({ lat, lng }));
+            fetch(`coords?lat=${lat}&lon=${lng}`)
+                .then(res => res.json())
+                .then(coord => addMarker(coord.lat, coord.lon, coord.id))
+                .catch(err => console.log("Error parsing json coordinates: ", err));
         });
 
-        document.getElementById('reset-btn').addEventListener('click', reset);
-        document.getElementById('start-btn').addEventListener('click', fetchPath);
+        document.getElementById("reset-btn").addEventListener("click", reset);
+        document.getElementById("start-btn").addEventListener("click", fetchPath);
     </script>
 </body>
 </html>

@@ -5,7 +5,6 @@ import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import de.unistuttgart.fmi.graph.Graph;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -27,67 +26,24 @@ public class Server {
             throw new RuntimeException(e);
         }
         server.createContext("/", new RootHandler());
-        server.createContext("/coordinates", new CoordinateHandler());
-        server.createContext("/path", new ArrayHandler());
+        server.createContext("/coords", new CoordinateHandler());
+        server.createContext("/path", new PathHandler());
 
         server.start();
         System.out.println("Server listening on http://127.0.0.1:8080/");
     }
 
-    public class ArrayHandler implements HttpHandler {
-        @Override
-        public void handle(HttpExchange exchange) throws IOException {
-            exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
-            exchange.getResponseHeaders().add("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-            exchange.getResponseHeaders().add("Access-Control-Allow-Headers", "Content-Type");
-            if ("OPTIONS".equalsIgnoreCase(exchange.getRequestMethod())) {
-                exchange.sendResponseHeaders(204, -1);
-                return;
-            }
-            if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
-                exchange.sendResponseHeaders(405, -1);
-                return;
-            }
-
-            InputStream inputStream = exchange.getRequestBody();
-            String requestBody = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
-            var nodes = parseNodesFromJson(requestBody);
-
-            var pathfinder = graph.getClosestPathFinder();
-            pathfinder.getShortestPath(nodes.get("start"), nodes.get("end"));
-            List<double[]> path = pathfinder.getPath();
-
-            String jsonResponse = convertPathToJson(path);
-
-            exchange.getResponseHeaders().set("Content-Type", "application/json");
-            exchange.sendResponseHeaders(200, jsonResponse.getBytes(StandardCharsets.UTF_8).length);
-
-            try (OutputStream outputStream = exchange.getResponseBody()) {
-                outputStream.write(jsonResponse.getBytes(StandardCharsets.UTF_8));
+    public Map<String, String> parseGetQuery(String query) {
+        Map<String, String> result = new HashMap<>();
+        for (String param : query.split("&")) {
+            String[] entry = param.split("=");
+            if (entry.length > 1) {
+                result.put(entry[0], entry[1]);
+            } else {
+                result.put(entry[0], "");
             }
         }
-
-        private Map<String, Integer> parseNodesFromJson(String json) {
-            json = json.trim();
-            json = json.substring(1, json.length() - 1);
-            var lines = json.split(",");
-
-            var map = new HashMap<String, Integer>();
-            map.put(lines[0].split(":")[0].replace("\"", ""), Integer.parseInt(lines[0].split(":")[1].trim()));
-            map.put(lines[1].split(":")[0].replace("\"", ""), Integer.parseInt(lines[1].split(":")[1].trim()));
-
-            return map;
-        }
-
-        private String convertPathToJson(List<double[]> path) {
-            StringBuilder jsonBuilder = new StringBuilder("{\"path\":[");
-            var last = path.removeLast();
-            for (double[] node : path) {
-                jsonBuilder.append(String.format(Locale.US, "{\"lat\":%f,\"lng\":%f},", node[0], node[1]));
-            }
-            jsonBuilder.append(String.format(Locale.US, "{\"lat\":%f,\"lng\":%f}]}", last[0], last[1]));
-            return jsonBuilder.toString();
-        }
+        return result;
     }
 
     private class RootHandler implements HttpHandler {
@@ -107,67 +63,57 @@ public class Server {
     private class CoordinateHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
-            exchange.getResponseHeaders().add("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-            exchange.getResponseHeaders().add("Access-Control-Allow-Headers", "Content-Type");
+            var nodes = parseGetQuery(exchange.getRequestURI().getQuery());
 
-            if ("OPTIONS".equalsIgnoreCase(exchange.getRequestMethod())) {
-                exchange.sendResponseHeaders(204, -1);
+            double lat = Double.parseDouble(nodes.get("lat"));
+            double lon = Double.parseDouble(nodes.get("lon"));
+
+            double[] neighbour = graph.getNearestNeighbour(new double[] {lat, lon});
+
+            String response = String.format(
+                    Locale.US, "{\"lat\":%f,\"lon\":%f,\"id\":%d}", neighbour[0], neighbour[1], (int) neighbour[2]);
+
+            exchange.getResponseHeaders().set("Content-Type", "application/json");
+            exchange.sendResponseHeaders(200, response.getBytes(StandardCharsets.UTF_8).length);
+
+            try (OutputStream outputStream = exchange.getResponseBody()) {
+                outputStream.write(response.getBytes(StandardCharsets.UTF_8));
+            }
+        }
+    }
+
+    public class PathHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            var nodes = parseGetQuery(exchange.getRequestURI().getQuery());
+
+            var pathfinder = graph.getClosestPathFinder();
+            int distance = pathfinder.getShortestPath(
+                    Integer.parseInt(nodes.get("start")), Integer.parseInt(nodes.get("end")));
+            if (distance == -1) {
+                exchange.sendResponseHeaders(404, 0);
+                try (OutputStream outputStream = exchange.getResponseBody()) {
+                    outputStream.write(new byte[0]);
+                }
                 return;
             }
+            String jsonResponse = convertPathToJson(pathfinder.getPath());
 
-            if (!"POST".equalsIgnoreCase(exchange.getRequestMethod())) {
-                exchange.sendResponseHeaders(405, -1);
-                return;
-            }
-
-            InputStream inputStream = exchange.getRequestBody();
-            String requestBody = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
-
-            double lat = 0;
-            double lng = 0;
-            try {
-                lat = extractValue(requestBody, "lat");
-                lng = extractValue(requestBody, "lng");
-
-                double[] neighbour = graph.getNearestNeighbour(new double[] {lat, lng});
-
-                String response = String.format(
-                        Locale.US, "{\"lat\":%f,\"lng\":%f,\"id\":%d}", neighbour[0], neighbour[1], (int) neighbour[2]);
-
-                exchange.getResponseHeaders().set("Content-Type", "application/json");
-                exchange.sendResponseHeaders(200, response.getBytes(StandardCharsets.UTF_8).length);
-
-                try (OutputStream outputStream = exchange.getResponseBody()) {
-                    outputStream.write(response.getBytes(StandardCharsets.UTF_8));
-                }
-            } catch (IllegalArgumentException e) {
-                String errorResponse = "{\"error\":\"Invalid input\"}";
-                exchange.getResponseHeaders().set("Content-Type", "application/json");
-                exchange.sendResponseHeaders(400, errorResponse.getBytes(StandardCharsets.UTF_8).length);
-                try (OutputStream outputStream = exchange.getResponseBody()) {
-                    outputStream.write(errorResponse.getBytes(StandardCharsets.UTF_8));
-                }
+            exchange.getResponseHeaders().set("Content-Type", "application/json");
+            exchange.sendResponseHeaders(200, jsonResponse.getBytes(StandardCharsets.UTF_8).length);
+            try (OutputStream outputStream = exchange.getResponseBody()) {
+                outputStream.write(jsonResponse.getBytes(StandardCharsets.UTF_8));
             }
         }
 
-        private double extractValue(String json, String key) {
-            String searchKey = "\"" + key + "\":";
-            int startIndex = json.indexOf(searchKey);
-
-            if (startIndex == -1) {
-                throw new IllegalArgumentException("Key not found: " + key);
+        private String convertPathToJson(List<double[]> path) {
+            StringBuilder jsonBuilder = new StringBuilder("{\"path\":[");
+            var last = path.removeLast();
+            for (double[] node : path) {
+                jsonBuilder.append(String.format(Locale.US, "{\"lat\":%f,\"lon\":%f},", node[0], node[1]));
             }
-            startIndex += searchKey.length();
-            int endIndex = json.indexOf(",", startIndex);
-            if (endIndex == -1) {
-                endIndex = json.indexOf("}", startIndex);
-            }
-            if (endIndex == -1) {
-                throw new IllegalArgumentException("Invalid json");
-            }
-            String valueStr = json.substring(startIndex, endIndex).trim();
-            return Double.parseDouble(valueStr);
+            jsonBuilder.append(String.format(Locale.US, "{\"lat\":%f,\"lon\":%f}]}", last[0], last[1]));
+            return jsonBuilder.toString();
         }
     }
 }
