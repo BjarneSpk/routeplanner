@@ -32,6 +32,22 @@
     <button id="reset-btn">Reset</button>
     <button id="start-btn">Calculate Path</button>
 
+    <div class="container">
+            <div class="input-group">
+                <label for="startInput">Start</label>
+                <input type="text" id="startInput">
+                <button onclick="setStart()">Set</button>
+                <div id="startOutput" class="output"></div>
+            </div>
+
+            <div class="input-group">
+                <label for="targetInput">Target</label>
+                <input type="text" id="targetInput">
+                <button onclick="setTarget()">Set</button>
+                <div id="targetOutput" class="output"></div>
+            </div>
+        </div>
+
     <script>
         const map = L.map("map").setView([48.745065, 9.105870], 10);
 
@@ -39,38 +55,101 @@
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
 
-        let markers = [];
-        let ids = [];
+        let markers = [null, null];
         let pathLayer = null;
 
+        let start = null;
+        let target = null;
+        
+        function setStart() {
+            if (markers[0] != null) {
+                map.removeLayer(markers[0]);
+            }
+            if (pathLayer) {
+                map.removeLayer(pathLayer);
+                pathLayer = null;
+            }
+            markers[0] = null;
+            start = null;
+
+            const latlng = document.getElementById("startInput").value.split(",");
+
+            fetch(`coords?lat=${latlng[0].trim()}&lon=${latlng[1].trim()}`)
+                .then(res => res.json())
+                .then(coord => {
+                    const marker = L.marker([coord.lat, coord.lon]).addTo(map);
+                    markers[0] = marker;
+                    start = [coord.lat, coord.lon, coord.id];
+                    document.getElementById("startOutput").innerHTML = `${coord.lat}, ${coord.lon} (${coord.id})`;
+                })
+                .catch(err => console.log("Error parsing json coordinates: ", err));
+        }
+
+        function setTarget(){
+            if (markers[1] != null) {
+                map.removeLayer(markers[1]);
+            }
+            if (pathLayer) {
+                map.removeLayer(pathLayer);
+                pathLayer = null;
+            }
+            markers[1] = null;
+            target = null;
+
+            const latlng = document.getElementById("targetInput").value.trim().split(",");
+
+            fetch(`coords?lat=${latlng[0].trim()}&lon=${latlng[1].trim()}`)
+                .then(res => res.json())
+                .then(coord => {
+                    const marker = L.marker([coord.lat, coord.lon]).addTo(map);
+                    markers[1] = marker;
+                    target = [coord.lat, coord.lon, coord.id];
+                    document.getElementById("targetOutput").innerHTML = `${coord.lat}, ${coord.lon} (${coord.id})`;
+                })
+                .catch(err => console.log("Error parsing json coordinates: ", err));
+        }
+
         function addMarker(lat, lon, id) {
-            if (markers.length < 2) {
+            if (start == null) {
                 const marker = L.marker([lat, lon]).addTo(map);
-                markers.push(marker);
-                ids.push(id);
+                markers[0] = marker;
+                start = [lat, lon, id];
+            } else if (target == null) {
+                const marker = L.marker([lat, lon]).addTo(map);
+                markers[1] = marker;
+                target = [lat, lon, id];
             }
         }
 
         function fetchPath() {
-            if (ids.length != 2 || pathLayer) {
+            if (start == null || target == null || pathLayer) {
                 return;
             }
-            fetch(`path?start=${ids[0]}&end=${ids[1]}`)
+            fetch(`path?start=${start[2]}&end=${target[2]}`)
                 .then(res => res.json())
-                .then(data => drawPath(data.path))
+                .then(data => drawPath(data.geojson))
                 .catch(err => console.log("Error while parsing json-path: ", err));
         }
 
-        function drawPath(coordinates) {
-            const latLons = coordinates.map(coord => [coord.lat, coord.lon]);
-            pathLayer = L.polyline(latLons, { color: "blue" }).addTo(map);
-            map.fitBounds(pathLayer.getBounds());
+        function drawPath(geojson) {
+            pathLayer = L.geoJSON(geojson).addTo(map);
+            map.fitBounds(L.geoJSON(geojson).getBounds());
         }
 
         function reset() {
-            markers.forEach(marker => map.removeLayer(marker));
-            markers = [];
-            ids = [];
+            if (markers[0] != null) {
+                map.removeLayer(markers[0]);
+            }
+            if (markers[1] != null) {
+                map.removeLayer(markers[1]);
+            }
+            markers = [null, null];
+            start = null;
+            target = null;
+
+            document.getElementById('startOutput').innerHTML = '';
+            document.getElementById('targetOutput').innerHTML = '';
+
             if (pathLayer) {
                 map.removeLayer(pathLayer);
                 pathLayer = null;
@@ -78,7 +157,7 @@
         }
 
         map.on("click", e => {
-            if (markers.length >= 2) {
+            if (start != null && target != null) {
                 return;
             }
             const { lat, lng } = e.latlng;
@@ -87,6 +166,7 @@
                 .then(coord => addMarker(coord.lat, coord.lon, coord.id))
                 .catch(err => console.log("Error parsing json coordinates: ", err));
         });
+
 
         document.getElementById("reset-btn").addEventListener("click", reset);
         document.getElementById("start-btn").addEventListener("click", fetchPath);

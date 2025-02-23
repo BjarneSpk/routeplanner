@@ -107,12 +107,16 @@ public class Server {
         }
 
         private String convertPathToJson(List<double[]> path) {
-            StringBuilder jsonBuilder = new StringBuilder("{\"path\":[");
+            StringBuilder jsonBuilder = new StringBuilder("{\"geojson\":");
             var last = path.removeLast();
+
+            jsonBuilder.append(
+                    "{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\",\"properties\":{},\"geometry\":{\"type\":\"LineString\",\"coordinates\":[");
             for (double[] node : path) {
-                jsonBuilder.append(String.format(Locale.US, "{\"lat\":%f,\"lon\":%f},", node[0], node[1]));
+                jsonBuilder.append(String.format(Locale.US, "[%f,%f],", node[1], node[0]));
             }
-            jsonBuilder.append(String.format(Locale.US, "{\"lat\":%f,\"lon\":%f}]}", last[0], last[1]));
+            jsonBuilder.append(String.format(Locale.US, "[%f,%f]", last[1], last[0]));
+            jsonBuilder.append("]}}]}}");
             return jsonBuilder.toString();
         }
     }
